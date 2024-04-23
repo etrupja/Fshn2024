@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Student.API.Dto;
 
 namespace Student.API.Controllers
 {
@@ -11,27 +12,51 @@ namespace Student.API.Controllers
         [HttpGet("All")]
         public IActionResult GetStudents()
         {
-            return Ok();
+            //List of students
+            var allStudents = new List<Student.API.Models.Student>()
+            {
+                new Student.API.Models.Student()
+                {
+                    Id = 1,
+                    FullName = "First Student",
+                    DOB = DateTime.Now.AddYears(-20)
+                },
+                new Student.API.Models.Student()
+                {
+                    Id = 2,
+                    FullName = "Second Student",
+                    DOB = DateTime.Now.AddYears(-20)
+                },
+            };
+
+            return Ok(allStudents);
         }
 
         [HttpGet("GetById/{id}")]
         public IActionResult GetStudentById(int id)
         {
-            return Ok($"Student with id = {id}");
+            var newStudent = new Models.Student()
+            {
+                Id = 1,
+                FullName = "First Student",
+                DOB = DateTime.Now.AddYears(-20)
+            };
+
+            return Ok(newStudent);
         }
 
 
         [HttpPost]
-        public IActionResult AddNewStudent([FromBody]object payload)
+        public IActionResult AddNewStudent([FromBody] PostStudentDto payload)
         {
-            return Ok("Student added");
+            return Ok(payload);
         }
 
 
         [HttpPut("{id}")]
-        public IActionResult UpdateStudent([FromBody] object payload, int id)
+        public IActionResult UpdateStudent([FromBody] PutStudentDto payload, int id)
         {
-            return Ok("Student added");
+            return Ok(payload);
         }
 
 
