@@ -8,26 +8,17 @@ namespace Student.API.Controllers
     [ApiController]
     public class StudentsController : ControllerBase
     {
+        private AppDbContext _context;
+        public StudentsController(AppDbContext context) 
+        {
+            _context = context;
+        }
 
         [HttpGet("All")]
         public IActionResult GetStudents()
         {
             //List of students
-            var allStudents = new List<Student.API.Models.Student>()
-            {
-                new Student.API.Models.Student()
-                {
-                    Id = 1,
-                    FullName = "First Student",
-                    DOB = DateTime.Now.AddYears(-20)
-                },
-                new Student.API.Models.Student()
-                {
-                    Id = 2,
-                    FullName = "Second Student",
-                    DOB = DateTime.Now.AddYears(-20)
-                },
-            };
+            var allStudents = _context.Students.ToList();
 
             return Ok(allStudents);
         }
@@ -35,12 +26,11 @@ namespace Student.API.Controllers
         [HttpGet("GetById/{id}")]
         public IActionResult GetStudentById(int id)
         {
-            var newStudent = new Models.Student()
-            {
-                Id = 1,
-                FullName = "First Student",
-                DOB = DateTime.Now.AddYears(-20)
-            };
+            var newStudent = _context.Students
+                .FirstOrDefault(n => n.Id == id);
+
+            if (newStudent == null)
+                return NotFound($"Student with id {id} could not be found.");
 
             return Ok(newStudent);
         }
@@ -49,6 +39,16 @@ namespace Student.API.Controllers
         [HttpPost]
         public IActionResult AddNewStudent([FromBody] PostStudentDto payload)
         {
+            var newStudent = new Models.Student()
+            {
+                FullName = payload.FullName,
+                DOB = payload.DOB,
+                Example = payload.Example
+            };
+
+            _context.Students.Add(newStudent);
+            _context.SaveChanges();
+
             return Ok(payload);
         }
 
@@ -56,6 +56,14 @@ namespace Student.API.Controllers
         [HttpPut("{id}")]
         public IActionResult UpdateStudent([FromBody] PutStudentDto payload, int id)
         {
+            var studentDb = _context.Students
+                .FirstOrDefault(n => n.Id == id);
+
+            studentDb.FullName = payload.FullName;
+            _context.Students.Update(studentDb);
+
+            _context.SaveChanges();
+
             return Ok(payload);
         }
 
@@ -63,6 +71,12 @@ namespace Student.API.Controllers
         [HttpDelete("DeleteById/{id}")]
         public IActionResult DeleteStudent(int id)
         {
+            var studentDb = _context.Students
+                .FirstOrDefault(n => n.Id == id);
+
+            _context.Students.Remove(studentDb);
+            _context.SaveChanges();
+
             return Ok();
         }
 
