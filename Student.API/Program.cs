@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Student.API;
+using Student.API.Services;
 using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,8 @@ var connString = "Data Source=ETR\\SQLEXPRESS;Initial Catalog=Fshn2024DB;Integra
 
 builder.Services
     .AddDbContext<AppDbContext>(o => o.UseSqlServer(connString));
+
+builder.Services.AddScoped<IStudentsService, StudentsService>();
 
 
 var app = builder.Build();

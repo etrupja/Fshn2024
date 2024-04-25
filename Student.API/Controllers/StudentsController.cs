@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Student.API.Dto;
+using Student.API.Services;
 
 namespace Student.API.Controllers
 {
@@ -8,17 +9,17 @@ namespace Student.API.Controllers
     [ApiController]
     public class StudentsController : ControllerBase
     {
-        private AppDbContext _context;
-        public StudentsController(AppDbContext context) 
+        private IStudentsService _service;
+        public StudentsController(IStudentsService service) 
         {
-            _context = context;
+            _service = service;
         }
 
         [HttpGet("All")]
         public IActionResult GetStudents()
         {
             //List of students
-            var allStudents = _context.Students.ToList();
+            var allStudents = _service.GetAllStudents();
 
             return Ok(allStudents);
         }
@@ -26,8 +27,7 @@ namespace Student.API.Controllers
         [HttpGet("GetById/{id}")]
         public IActionResult GetStudentById(int id)
         {
-            var newStudent = _context.Students
-                .FirstOrDefault(n => n.Id == id);
+            var newStudent = _service.GetStudentById(id);
 
             if (newStudent == null)
                 return NotFound($"Student with id {id} could not be found.");
@@ -39,30 +39,16 @@ namespace Student.API.Controllers
         [HttpPost]
         public IActionResult AddNewStudent([FromBody] PostStudentDto payload)
         {
-            var newStudent = new Models.Student()
-            {
-                FullName = payload.FullName,
-                DOB = payload.DOB,
-                Example = payload.Example
-            };
+            var newStudent = _service.AddStudent(payload);
 
-            _context.Students.Add(newStudent);
-            _context.SaveChanges();
-
-            return Ok(payload);
+            return Ok(newStudent);
         }
 
 
         [HttpPut("{id}")]
         public IActionResult UpdateStudent([FromBody] PutStudentDto payload, int id)
         {
-            var studentDb = _context.Students
-                .FirstOrDefault(n => n.Id == id);
-
-            studentDb.FullName = payload.FullName;
-            _context.Students.Update(studentDb);
-
-            _context.SaveChanges();
+            var updatedStudent = _service.UpdateStudent(payload, id);
 
             return Ok(payload);
         }
@@ -71,11 +57,7 @@ namespace Student.API.Controllers
         [HttpDelete("DeleteById/{id}")]
         public IActionResult DeleteStudent(int id)
         {
-            var studentDb = _context.Students
-                .FirstOrDefault(n => n.Id == id);
-
-            _context.Students.Remove(studentDb);
-            _context.SaveChanges();
+            _service.DeleteStudent(id);
 
             return Ok();
         }
